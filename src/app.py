@@ -10,6 +10,8 @@ from api.models import db
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
 
 # from models import Person
 
@@ -19,7 +21,7 @@ static_file_dir = os.path.join(os.path.dirname(
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# database condiguration
+# database configuration
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url.replace(
@@ -36,6 +38,14 @@ setup_admin(app)
 
 # add the admin
 setup_commands(app)
+
+#bcrypt configuration
+bcrypt = Bcrypt(app)
+app.bcrypt = bcrypt
+
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = os.getenv("FLASK_APP_KEY")  # Change this!
+jwt = JWTManager(app)
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
