@@ -35,7 +35,7 @@ class DebitCard(db.Model):
     card_number = db.Column(db.String(16), unique=True, nullable=False)
     expiration_date = db.Column(db.Date, nullable=False)
     balance = db.Column(db.Float, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    is_active = db.Column(db.Boolean(), nullable=False, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
@@ -58,7 +58,7 @@ class CreditCard(db.Model):
     expiration_date = db.Column(db.Date, nullable=False)
     credit_limit = db.Column(db.Float, nullable=False)
     current_balance = db.Column(db.Float, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    is_active = db.Column(db.Boolean(), nullable=False, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
@@ -86,7 +86,7 @@ class Loan(db.Model):
     interest_rate = db.Column(db.Float, nullable=False)
     start_date = db.Column(db.Date, default=date.today, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
-    is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    is_active = db.Column(db.Boolean(), nullable=False, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
