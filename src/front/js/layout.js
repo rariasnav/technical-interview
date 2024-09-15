@@ -1,15 +1,25 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
 import { BackendURL } from "./component/backendURL";
 
-import { Home } from "./pages/home";
-import { Demo } from "./pages/demo";
-import { Single } from "./pages/single";
+import { Dashboard } from "./pages/Dashboard";
+import { KPIDashboard } from "./pages/KPIDashboard";
 import injectContext from "./store/appContext";
+
+import { Signup } from "./component/Signup";
+import { Login } from "./component/Login";
+import { DebitCardForm } from "./component/DebitCardForm";
+import { CreditCardForm } from "./component/CreditCardForm";
+import { LoanForm } from "./component/LoanForm";
 
 import { Navbar } from "./component/navbar";
 import { Footer } from "./component/footer";
+
+const PrivateRoute = ({ element }) => {
+    const token = localStorage.getItem('token');
+    return token ? element : <Navigate to="/login" />;
+};
 
 //create your first component
 const Layout = () => {
@@ -25,9 +35,16 @@ const Layout = () => {
                 <ScrollToTop>
                     <Navbar />
                     <Routes>
-                        <Route element={<Home />} path="/" />
-                        <Route element={<Demo />} path="/demo" />
-                        <Route element={<Single />} path="/single/:theid" />
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/kpi" element={<KPIDashboard />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/add-debit-card" element={<PrivateRoute element={<DebitCardForm />} />} />
+                        <Route path="/edit-debit-card/:id" element={<PrivateRoute element={<DebitCardForm />} />} />
+                        <Route path="/add-credit-card" element={<PrivateRoute element={<CreditCardForm />} />} />
+                        <Route path="/edit-credit-card/:id" element={<PrivateRoute element={<CreditCardForm />} />} />
+                        <Route path="/add-loan" element={<PrivateRoute element={<LoanForm />} />} />
+                        <Route path="/edit-loan/:id" element={<PrivateRoute element={<LoanForm />} />} />
                         <Route element={<h1>Not found!</h1>} />
                     </Routes>
                     <Footer />

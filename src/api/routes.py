@@ -123,8 +123,8 @@ def deactivate_account():
 @api.route('/debit_cards', methods=['POST'])
 @jwt_required()
 def create_debit_card():
+    user_id = get_jwt_identity()
     data = request.get_json()
-    user_id = data.get('user_id')
     card_number = data.get('card_number')
     expiration_date = data.get('expiration_date')
     balance = data.get('balance')
@@ -193,8 +193,8 @@ def deactivate_debit_card(id):
 @api.route('/credit_cards', methods=['POST'])
 @jwt_required()
 def create_credit_card():
+    user_id = get_jwt_identity()
     data = request.get_json()
-    user_id = data.get('user_id')
     card_number = data.get('card_number')
     expiration_date = data.get('expiration_date')
     credit_limit = data.get('credit_limit')
@@ -268,19 +268,16 @@ def deactivate_credit_card(id):
 @api.route('/loans', methods=['POST'])
 @jwt_required()
 def create_loan():
+    user_id = get_jwt_identity()
     data = request.get_json()
-    user_id = data.get('user_id')
     loan_type = data.get('loan_type')
     amount = data.get('amount')
     interest_rate = data.get('interest_rate')
     start_date = data.get('start_date')
     end_date = data.get('end_date')
 
-    if not all([user_id, loan_type, amount, interest_rate, start_date, end_date]):
+    if not all([loan_type, amount, interest_rate, start_date, end_date]):
         return jsonify({"msg": "All fields are required"}), 400
-    
-    if not User.query.get(user_id):
-        return jsonify({"msg": "User not found"}), 404
 
     valid_loan_types = ['personal', 'mortgage', 'auto']
     if loan_type not in valid_loan_types:
@@ -347,3 +344,48 @@ def deactivate_loan(id):
     loan.is_active = False
     db.session.commit()
     return jsonify({"msg": "Loan deactivated"}), 200
+
+
+@api.route('/api_total_loans_and_limits', methods=['GET'])
+def get_total_loans_and_limits():
+    total_loans = db.session.query(db.func.sum(Loan.amount)).scalar() or 0
+    total_credit_limits = db.session.query(db.func.sum(CreditCard.credit_limit)).scalar() or 0
+
+    total_loans = round(total_loans, 2)
+    total_credit_limits = round(total_credit_limits, 2)
+
+    return jsonify({
+        'total_loans': total_loans,
+        'total_credit_limits': total_credit_limits
+    })
+
+
+@api.route('/api_customer_usage_analytics', methods=['GET'])
+def get_customer_usage_analitycs():
+    total_debit_cards = db.session.query(db.func.count(DebitCard.id)).scalar() or 0
+    total_credit_cards = db.session.query(db.func.count(CreditCard.id)).scalar() or 0
+    total_balance_debit = db.session.query(db.func.sum(DebitCard.balance)).scalar() or 0
+    total_balance_credit = db.session.query(db.func.sum(CreditCard.current_balance)).scalar() or 0
+
+    total_balance_debit = round(total_balance_debit, 2)
+    total_balance_credit = round(total_balance_credit, 2)
+
+    return jsonify({
+        'total_debit_cards': total_debit_cards,
+        'total_credit_cards': total_credit_cards,
+        'total_balance_debit': total_balance_debit,
+        'total_balance_credit': total_balance_credit
+    })
+
+
+@api.route('/api_loan_repayment_insights', methods=['GET'])
+def get_loan_repayment_insights():
+    total_loans = db.session.query(db.func.count(Loan.id)).scalar() or 0
+    total_repaid = db.session.query(db.func.sum(Loan.amount)).filter(Loan.is_active == False).scalar() or 0
+    total_pending = total_loans - total_repaid
+
+    return jsonify({
+        'total_loans': total_loans,
+        'total_repaid': total_repaid,
+        'total_pending': total_pending
+    })
