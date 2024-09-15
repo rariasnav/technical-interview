@@ -1,23 +1,8 @@
-import { resolvePath } from "react-router-dom";
-
-const getState = ({ getStore, getActions, setStore }) => {
+const getState = ({ getActions, setStore }) => {
 	const baseURL = process.env.BACKEND_URL + "/api";
 
 	return {
-		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			],
+		store: {			
 			user_data: null,
 			debit_cards: [],
 			credit_cards: [],
@@ -333,6 +318,40 @@ const getState = ({ getStore, getActions, setStore }) => {
 					console.error("Error fetching loan repayment insights", error);
 				}
 				return null;
+			},
+			predictLoanApproval: async (customerData) => {
+				try {
+					const requestOptions = {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(customerData),
+					};
+					const response = await fetch(`${baseURL}/predict_loan_approval`, requestOptions);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					const data = await response.json();
+					return data['loan_approval_probability'];
+				} catch (error) {
+					console.error("Error predicting loan approval", error);
+				}
+			},
+			getCreditLimitInsights: async (customerData) => {
+				try {
+					const requestOptions = {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(customerData),
+					};
+					const response = await fetch(`${baseURL}/credit_limit_insights`, requestOptions);
+					if (!response.ok) {
+						throw new Error(`HTTP error! status: ${response.status}`);
+					}
+					const data = await response.json();
+					return data['credit_limit_recommendation'];
+				} catch (error) {
+					console.error("Error generating credit limit insights", error);
+				}
 			},
 		}
 	};

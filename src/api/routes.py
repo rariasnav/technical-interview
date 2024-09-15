@@ -1,13 +1,12 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
-from flask import Flask, request, jsonify, url_for, Blueprint
+
+from flask import request, jsonify, Blueprint
 from api.models import db, User, DebitCard, CreditCard, Loan
-from api.utils import generate_sitemap, APIException
+from api.utils import generate_sitemap
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+from api.ai_services import AIService
 
 api = Blueprint('api', __name__)
 
@@ -389,3 +388,17 @@ def get_loan_repayment_insights():
         'total_repaid': total_repaid,
         'total_pending': total_pending
     })
+
+
+@api.route('/predict_loan_approval', methods=['POST'])
+def predict_loan_approval():
+    customer_data = request.json
+    result = AIService.predict_loan_approval(customer_data)
+    return jsonify({"loan_approval_probability": result})
+
+
+@api.route('/credit_limit_insights', methods=['POST'])
+def credit_limit_insights():
+    customer_data = request.json
+    result = AIService.ai_credit_limit_insights(customer_data)
+    return jsonify({"credit_limit_recommendation": result})

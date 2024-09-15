@@ -1,3 +1,4 @@
+
 from datetime import date
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import ENUM
